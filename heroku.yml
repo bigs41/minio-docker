@@ -1,1 +1,2 @@
-run: docker-compose up -d
+run:
+  web: docker-compose up -d
