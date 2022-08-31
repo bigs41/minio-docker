@@ -1,10 +1,16 @@
-FROM minio/minio:RELEASE.2022-01-08T03-11-54Z.fips
+FROM nginx:1.20.1-alpine
 
-ENV MINIO_ROOT_USER=minio
-ENV MINIO_ROOT_PASSWORD=minio123
+COPY default.conf.template /etc/nginx/conf.d/default.conf.template
+COPY nginx.conf /etc/nginx/nginx.conf
+RUN apk update
+RUN apk add ca-certificates wget
+RUN update-ca-certificates
 
-EXPOSE 9000
-EXPOSE 9001
+RUN wget https://dl.min.io/server/minio/release/linux-amd64/minio
+RUN chmod +x minio
 
-ENTRYPOINT ["minio"]
-CMD ["server","/data","--console-address",":9001"]
+CMD  ./minio server /data & echo 'minIO started in background' && /bin/sh -c "envsubst '\$PORT' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf" && nginx -g 'daemon off;' ;
+
+
+
+
